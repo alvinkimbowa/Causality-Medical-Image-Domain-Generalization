@@ -334,7 +334,8 @@ class ExperimentNet(BaseModel):
 
     def plot_image_in_tb(self, writer, result_dict):
         for key, img in result_dict.items():
-            writer.add_image(key, img)
+            for idx in range(img.shape[0]):
+                writer.add_image(f'{key}_{idx}', img[idx])
 
     def track_scalar_in_tb(self, writer, result_dict, which_iter):
         for key, val in result_dict.items():
