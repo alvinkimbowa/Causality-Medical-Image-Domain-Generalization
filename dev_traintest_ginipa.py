@@ -200,13 +200,13 @@ def main(_run, _config, _log):
         opt.epoch_count = 0
         opt.niter = 0
         opt.niter_decay = 0
-    for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
+    for epoch in tqdm(range(opt.epoch_count, opt.niter + opt.niter_decay + 1), desc='Epochs'):
         epoch_start_time = time.time()
         iter_data_time = time.time()
         epoch_iter = 0
         np.random.seed()
         if opt.phase == 'train':
-            for i, train_batch in tqdm(enumerate(train_loader), total = train_loader.dataset.size // opt.batchSize - 1):
+            for i, train_batch in enumerate(train_loader):
 
                 iter_start_time = time.time()
                 if total_steps % opt.print_freq == 0:
