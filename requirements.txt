@@ -10,7 +10,7 @@ scipy
 segmentation-models-pytorch
 SimpleITK
 tensorboardX
-tensorboards
+tensorboard
 timm
 torch
 torchfile
