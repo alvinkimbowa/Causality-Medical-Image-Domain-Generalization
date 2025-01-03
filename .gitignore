@@ -1,4 +1,6 @@
-data
+checkpoints/
+data/*/processed
+data/*/tmp_reindexed
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
