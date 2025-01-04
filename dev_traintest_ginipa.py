@@ -119,11 +119,38 @@ def eval_list_wrapper(vol_list, nclass, model, label_name):
         domain_names.append(domain_name)
 
     error_dict['overall_by_domain'] = np.mean(overall_by_domain)
+    error_dict['overall_by_domain_std'] = np.std(overall_by_domain)
 
     print("Overall mean dice by domain {:06.5f}".format( error_dict['overall_by_domain'] ) )
+    print("Overall mean dice by domain std {:06.5f}".format( error_dict['overall_by_domain_std'] ) )
     # for prostate dataset, we use by-domain results to mitigate the differences in number of samples for each target domain
 
     return error_dict, dsc_table, domain_names
+
+def save_results_to_csv(save_dir, train_domain, test_domain, dsc_table, error_dict):
+    # save the results to .csv file
+    fn1 = os.path.join(save_dir.rsplit("/", 2)[0], 'compiled_results_by_sample.csv')
+    fn2 = os.path.join(save_dir.rsplit("/", 2)[0], 'compiled_results_by_domain.csv')
+
+    if not os.path.exists(fn1):
+        with open(fn1, 'w') as f:
+            f.write('train_domain,test_domain,mean_dice_by_sample,std_dice_by_sample\n')
+    if not os.path.exists(fn2):
+        with open(fn2, 'w') as f:
+            f.write('train_domain,test_domain,mean_dice_by_domain,std_dice_by_domain\n')
+
+    if test_domain == "NA":
+        test_domain = "all_rest"
+        
+    with open(fn1, 'a') as f:
+        f.write(f'{train_domain[0]},{test_domain},{dsc_table[:,1:].mean():06.5f},{dsc_table[:,1:].std():06.5f}\n')
+    with open(fn2, 'a') as f:
+        f.write(f'{train_domain[0]},{test_domain},{error_dict["overall_by_domain"]:06.5f},{error_dict["overall_by_domain_std"]:06.5f}\n')
+
+    print(f'Compiled results by sample are saved to {fn1}')
+    print(f'Compiled results by domain are saved to {fn2}')
+    return None
+
 
 @ex.automain
 def main(_run, _config, _log):
@@ -277,10 +304,16 @@ def main(_run, _config, _log):
                     _run.log_scalar(f'meanDice_{_dm}', error_dict[f'domain_{_dm}_overall'])
                     _run.log_scalar(f'rawDice_{_dm}', error_dict[f'domain_{_dm}_table'].tolist())
 
+                if opt.phase == 'test':
+                    save_results_to_csv(_run.observers[0].dir, opt.tr_domain, opt.te_domain, dsc_table, error_dict)
+                    
                 print('test for source domain as a reference')
                 _, dsc_table, error_dict, _ = prediction_wrapper(model, test_src_loader, opt, epoch, label_name, save_prediction = _config["save_prediction"])
                 _run.log_scalar('source_rawDice', dsc_table.tolist())
                 _run.log_scalar('source_meanDice', error_dict['overall'] )
+
+                if opt.phase == 'test':
+                    save_results_to_csv(_run.observers[0].dir, opt.tr_domain, opt.tr_domain, dsc_table, error_dict)
 
                 if _config["save_prediction"]:
                     for scan_id, comp in preds.items():
