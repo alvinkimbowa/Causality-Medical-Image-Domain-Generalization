@@ -1,3 +1,30 @@
+#!/bin/bash
+
+### GPU batch job ###
+#SBATCH --job-name=csdg
+#SBATCH --account=st-ilker-1-gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=12
+#SBATCH --gpus=1
+#SBATCH --mem=12G
+#SBATCH --time=12:00:00
+#SBATCH --output=outputs/%x-%j_output.txt
+#SBATCH --error=outputs/%x-%j_error.txt
+# #SBATCH --mail-user=alvinbk@student.ubc.ca
+# #SBATCH --mail-type=ALL
+
+#############################################################################
+
+module load git
+
+source ~/.bashrc
+conda activate csdg
+which python
+echo ""
+
+echo "Starting at:" `date`
+
 # GIN and IPA for prostate images
 SCRIPT=dev_traintest_ginipa.py
 GPUID1=0
@@ -36,7 +63,7 @@ TE_DOMAIN="NA" # will be override by exclu_domain
 # blender config
 BLEND_GRID_SIZE=24
 
-ALL_TRS=("C" "A" "E") # repeat the experiment for different source domains. For the full set of experiments, use A B C D E F
+ALL_TRS=("F") # "A" "E") # repeat the experiment for different source domains. For the full set of experiments, use A B C D E F
 NCLASS=2
 
 # KL term
@@ -50,7 +77,7 @@ do
     NAME=${CPT}_tr${TR_DOMAIN}_exclude${TR_DOMAIN}_${MODEL}
     LOAD_DIR=$NAME
 
-    python3 $SCRIPT with exp_type=$EXP_TYPE\
+    python $SCRIPT with exp_type=$EXP_TYPE\
         name=$NAME\
         model=$MODEL\
         nThreads=$NUM_WORKER\

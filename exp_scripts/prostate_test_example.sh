@@ -1,7 +1,32 @@
+#!/bin/bash
+
+### GPU batch job ###
+#SBATCH --job-name=csdg
+#SBATCH --account=st-ilker-1-gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=12
+#SBATCH --gpus=1
+#SBATCH --mem=12G
+#SBATCH --time=01:00:00
+#SBATCH --output=outputs/%x-%j_output.txt
+#SBATCH --error=outputs/%x-%j_error.txt
+# #SBATCH --mail-user=alvinbk@student.ubc.ca
+# #SBATCH --mail-type=ALL
+
+#############################################################################
+
+module load git
+
+source ~/.bashrc
+conda activate csdg
+which python
+echo ""
+
 # GIN and IPA for prostate images
 SCRIPT=dev_traintest_ginipa.py
 GPUID1=0
-NUM_WORKER=8
+NUM_WORKER=1
 MODEL='efficient_b2_unet'
 CPT='test_prostate'
 
@@ -20,7 +45,7 @@ LAMBDA_DICE=1.0
 LAMBDA_CONSIST=10.0 # Xu et al.
 
 SAVE_EPOCH=1000
-SAVE_PRED=False # save predictions or not
+SAVE_PRED=True # save predictions or not
 
 DATASET='PROSTATE'
 CHECKPOINTS_DIR="./my_exps/$DATASET"
@@ -37,7 +62,7 @@ TE_DOMAIN="NA" # will be override by exclu_domain. take the rest of five domains
 BLEND_GRID_SIZE=24
 PHASE='test'
 
-ALL_TRS=("C") # repeat the experiment for different source domains. For the full set of experiments, use A B C D E F
+ALL_TRS=("A" "B" "C" "D" "E" "F") # repeat the experiment for different source domains. For the full set of experiments, use A B C D E F
 NCLASS=2
 
 # KL term
@@ -51,7 +76,7 @@ do
     NAME=${CPT}_tr${TR_DOMAIN}_exclude${TR_DOMAIN}_${MODEL}
     LOAD_DIR=$NAME
 
-    RELOAD_MODEL="your path to the checkpoint file trained on domain ${TR_DOMAIN}"
+    RELOAD_MODEL="checkpoints/CAUSALDG_prostate_ginipa_example_tr${TR_DOMAIN}_exclude${TR_DOMAIN}_efficient_b2_unet/1/snapshots/latest_net_Seg.pth"
 
     python3 $SCRIPT with exp_type=$EXP_TYPE\
         name=$NAME\

@@ -1,3 +1,5 @@
+*.out
+outputs/
 checkpoints/
 data/*/processed
 data/*/tmp_reindexed
@@ -173,3 +175,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+outputs/csdg-3767735_error.txt
